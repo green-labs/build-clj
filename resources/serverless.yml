@@ -1,4 +1,4 @@
-service: template
+service: {{service}}
 
 provider:
   name: aws
@@ -14,6 +14,6 @@ package:
   artifact: ${file(target/target.json):file}
 
 functions:
-  hello-greenlabs:
-    handler: hello_greenlabs::handler
-    role: arn:aws:iam::887960154422:role/lambda-exec-role
+  {{function}}:
+    handler: {{file}}::handler
+    role: {{role}}
