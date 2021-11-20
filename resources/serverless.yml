@@ -1,0 +1,19 @@
+service: template
+
+provider:
+  name: aws
+  runtime: java11
+  region: ap-northeast-2
+  lambdaHashingVersion: 20201221
+  deploymentBucket:
+    name: greenlabs-serverless-deployments
+  tags:
+    VERSION: ${file(target/target.json):version}
+
+package:
+  artifact: ${file(target/target.json):file}
+
+functions:
+  hello-greenlabs:
+    handler: hello_greenlabs::handler
+    role: arn:aws:iam::887960154422:role/lambda-exec-role

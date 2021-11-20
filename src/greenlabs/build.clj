@@ -33,3 +33,9 @@
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis basis}))
+
+(defn serverless
+  "serverless에 필요한 설정 템플릿을 생성합니다."
+  [_]
+  (b/write-file {:path   "serverless.yml"
+                 :string (slurp (io/resource "serverless.yml"))}))
