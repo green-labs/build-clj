@@ -1,0 +1,2 @@
+{:paths ["src" "resources"]
+ :deps  {io.github.clojure/tools.build {:git/tag "v0.6.6" :git/sha "4d41c26"}}}
