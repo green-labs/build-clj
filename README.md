@@ -5,7 +5,7 @@ tools.build 사용하듯이 `:build` 별칭으로 사용할 수 있습니다.
 ```clojure
 {,,,
  :aliases {:build {:deps       {io.github.green-labs/build-clj
-                                {:git/sha "6cc717fba2ec66955268f6296705ede8ed8759fb"}}
+                                {:git/tag "v0.0.1" :git/sha "015e5e5"}}
                    :ns-default greenlabs.build}}
  ,,,}
 ```
