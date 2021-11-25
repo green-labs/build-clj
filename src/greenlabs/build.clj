@@ -7,41 +7,48 @@
   (:require [clojure.tools.build.api :as b]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [clojure.java.shell :refer [sh]]
             [clojure.string :as str]))
 
-(def commit-hash (-> (sh "git" "rev-parse" "--short" "HEAD")
-                     :out
-                     str/trim-newline))
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
-(def uber-file (format "target/%s.jar" commit-hash))
-
-;; 람다 실행을 위한 최소한의 권한이 부여된 IAM Role 입니다.
-(def aws-role "arn:aws:iam::887960154422:role/lambda-exec-role")
 
 (defn clean [_]
   (b/delete {:path "target"}))
 
-(defn uber [_]
+(defn repo-hash []
+  (b/git-process {:git-args "rev-parse --short HEAD"}))
+
+(defn repo-status []
+  (b/git-process {:git-args "status --porcelain"}))
+
+(defn uber
+  "\"target/{{hash}}.jar\" 경로에 uberjar를 생성합니다.
+  같은 이름의 파일이 있다면 덮어씌워집니다.
+  만약 git 저장소라면 HEAD 커밋 이후로 변경된 파일이 없어야 합니다."
+  [_]
   (clean nil)
-  (b/write-file {:path   "target/target.json"
-                 :string (json/write-str {:file uber-file :version commit-hash}
-                                         :escape-slash false)})
-  (b/copy-dir {:src-dirs   ["src" "resources"]
-               :target-dir class-dir})
-  (b/compile-clj {:basis     basis
-                  :src-dirs  ["src"]
-                  :class-dir class-dir})
-  (b/uber {:class-dir class-dir
-           :uber-file uber-file
-           :basis     basis}))
+  (let [commit-hash (repo-hash)
+        uber-file   (format "target/%s.jar" (or commit-hash "uber"))]
+
+    (when commit-hash
+      (assert (nil? (repo-status)) "The repository is not clean."))
+
+    (b/write-file {:path   "target/target.json"
+                   :string (json/write-str {:file uber-file :version commit-hash}
+                                           :escape-slash false)})
+    (b/copy-dir {:src-dirs   ["src" "resources"]
+                 :target-dir class-dir})
+    (b/compile-clj {:basis     basis
+                    :src-dirs  ["src"]
+                    :class-dir class-dir})
+    (b/uber {:class-dir class-dir
+             :uber-file uber-file
+             :basis     basis})
+
+    (println (str "Uber JAR created: \"" uber-file "\""))))
 
 (defn serverless
-  "serverless 기본 설정을 생성합니다.
-
-  config 에는 템플릿 변수에 해당하는 key가 있어야 합니다.
-  "
+  "serverless 기본 설정(.yml) 파일을 생성합니다."
   [{:keys [serverless]}]
   (when (.exists (b/resolve-path "serverless.yml"))
     (println "serverless.yml already exists.")

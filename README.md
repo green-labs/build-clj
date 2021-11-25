@@ -38,6 +38,7 @@ cat serverless.yml
                    :ns-default greenlabs.build
                    :exec-args  {:serverless {:service  "my-service"
                                              :function "my-function"
-                                             :file     "my-file"}}}}
+                                             :file     "my-file"
+                                             :role     "arn:aws:iam::887960154422:role/lambda-exec-role"}}}}
  ,,,}
 ```
