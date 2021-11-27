@@ -57,8 +57,7 @@
   (let [;; temporary placeholder
         default-config {:service  "my-service"
                         :function "my-fn"
-                        :file     "my-file"
-                        :role     aws-role}
+                        :file     "my-file"}
         config         (merge default-config serverless)
 
         yaml           (slurp (io/resource "serverless.yml"))

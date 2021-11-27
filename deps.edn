@@ -1,3 +1,4 @@
 {:paths       ["src" "resources"]
- :deps        {io.github.clojure/tools.build {:git/tag "v0.6.7" :git/sha "8cca4f4"}}
+ :deps        {org.clojure/clojure           {:mvn/version "1.10.3"}
+               io.github.clojure/tools.build {:git/tag "v0.6.7" :git/sha "8cca4f4"}}
  :tools/usage {:ns-default greenlabs.build}}
