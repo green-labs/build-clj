@@ -39,7 +39,7 @@
     (b/write-file {:path   "target/target.json"
                    :string (json/write-str {:file uber-file :version commit-hash}
                                            :escape-slash false)})
-    (b/copy-dir {:src-dirs   ["src" "resources"]
+    (b/copy-dir {:src-dirs   ["src" "resources" "classes"]
                  :target-dir class-dir})
     (b/compile-clj {:basis     basis
                     :src-dirs  ["src"]
