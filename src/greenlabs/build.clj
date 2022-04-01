@@ -27,11 +27,16 @@
   만약 git 저장소라면 HEAD 커밋 이후로 변경된 파일이 없어야 합니다.
 
   Options:
-    :file-name - optional, 생성될 uberjar의 이름입니다. default 값은 커밋 hash 입니다."
-  [{:keys [file-name]}]
+    :file-name - optional, 생성될 uberjar의 이름입니다. default 값은 커밋 hash 입니다.
+    :main - optional, uberjar의 main 입니다."
+  [{:keys [file-name main]}]
   (clean nil)
   (let [commit-hash (repo-hash)
-        uber-file   (format "target/%s.jar" (or file-name commit-hash "uber"))]
+        uber-file (format "target/%s.jar" (or file-name commit-hash "uber"))
+        opts (cond-> {:class-dir class-dir
+                      :uber-file uber-file
+                      :basis     basis}
+               main (assoc :main main))]
 
     (when commit-hash
       (assert (nil? (repo-status)) "The repository is not clean."))
@@ -44,9 +49,7 @@
     (b/compile-clj {:basis     basis
                     :src-dirs  ["src"]
                     :class-dir class-dir})
-    (b/uber {:class-dir class-dir
-             :uber-file uber-file
-             :basis     basis})
+    (b/uber opts)
 
     (println (str "Uber JAR created: \"" uber-file "\""))))
 
