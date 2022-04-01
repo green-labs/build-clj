@@ -22,13 +22,16 @@
   (b/git-process {:git-args "status --porcelain"}))
 
 (defn uber
-  "\"target/{{hash}}.jar\" 경로에 uberjar를 생성합니다.
+  "\"target/{{file-name}}.jar\" 경로에 uberjar를 생성합니다.
   같은 이름의 파일이 있다면 덮어씌워집니다.
-  만약 git 저장소라면 HEAD 커밋 이후로 변경된 파일이 없어야 합니다."
-  [_]
+  만약 git 저장소라면 HEAD 커밋 이후로 변경된 파일이 없어야 합니다.
+
+  Options:
+    :file-name - optional, 생성될 uberjar의 이름입니다. default 값은 커밋 hash 입니다."
+  [{:keys [file-name]}]
   (clean nil)
   (let [commit-hash (repo-hash)
-        uber-file   (format "target/%s.jar" (or commit-hash "uber"))]
+        uber-file   (format "target/%s.jar" (or file-name commit-hash "uber"))]
 
     (when commit-hash
       (assert (nil? (repo-status)) "The repository is not clean."))
@@ -36,7 +39,7 @@
     (b/write-file {:path   "target/target.json"
                    :string (json/write-str {:file uber-file :version commit-hash}
                                            :escape-slash false)})
-    (b/copy-dir {:src-dirs   ["src" "resources"]
+    (b/copy-dir {:src-dirs   ["src" "resources" "classes"]
                  :target-dir class-dir})
     (b/compile-clj {:basis     basis
                     :src-dirs  ["src"]
