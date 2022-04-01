@@ -5,7 +5,7 @@ tools.build 사용하듯이 `:build` 별칭으로 사용할 수 있습니다.
 ```clojure
 {,,,
  :aliases {:build {:deps       {io.github.green-labs/build-clj
-                                {:git/tag "v0.0.5" :git/sha "cadbdb2"}}
+                                {:git/tag "v0.0.5" :git/sha "f2220c9"}}
                    :ns-default greenlabs.build}}
  ,,,}
 ```
@@ -34,7 +34,7 @@ cat serverless.yml
 ```clojure
 {,,,
  :aliases {:build {:deps       {io.github.green-labs/build-clj
-                                {:git/sha "6cc717fba2ec66955268f6296705ede8ed8759fb"}}
+                                {:git/tag "..." :git/sha "..."}}
                    :ns-default greenlabs.build
                    :exec-args  {:serverless {:service  "my-service"
                                              :function "my-function"
