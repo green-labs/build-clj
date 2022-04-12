@@ -9,49 +9,60 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(def class-dir "target/classes")
-(def basis (b/create-basis {:project "deps.edn"}))
-
-(defn clean [_]
-  (b/delete {:path "target"}))
-
 (defn repo-hash []
   (b/git-process {:git-args "rev-parse --short HEAD"}))
 
 (defn repo-status []
   (b/git-process {:git-args "status --porcelain"}))
 
-(defn uber
-  "\"target/{{file-name}}.jar\" 경로에 uberjar를 생성합니다.
-  같은 이름의 파일이 있다면 덮어씌워집니다.
-  만약 git 저장소라면 HEAD 커밋 이후로 변경된 파일이 없어야 합니다.
+(defn clean
+  "Clean a specific path
 
   Options:
-    :file-name - optional, 생성될 uberjar의 이름입니다. default 값은 커밋 hash 입니다.
-    :main - optional, uberjar의 main 입니다."
-  [{:keys [file-name main]}]
-  (clean nil)
-  (let [commit-hash (repo-hash)
-        uber-file (format "target/%s.jar" (or file-name commit-hash "uber"))
-        opts (cond-> {:class-dir class-dir
-                      :uber-file uber-file
-                      :basis     basis}
-               main (assoc :main main))]
+    :path               - optional, defaults to 'target'"
+  ([& {:keys [path] :or {path "target"}}]
+   (b/delete {:path path})))
 
+(defn uber
+  "Create uberjar file
+
+  Options:
+    :uber-file          - required, uberjar file name (ex. 'backend.jar')
+    :basis              - optional, used to pull dep jars, defaults to deps.edn basis
+    :class-dir          - optional, local class dir to include, defaults to 'target/classes'
+    :main               - optional, main class symbol"
+  [{:keys [uber-file basis class-dir]
+    :or   {basis     (b/create-basis {:project "deps.edn"})
+           class-dir "target/classes"}
+    :as   opts}]
+  (assert uber-file "uber-file is required")
+  (b/copy-dir {:src-dirs   ["src" "resources" "classes"]
+               :target-dir class-dir})
+  (b/compile-clj {:basis     basis
+                  :src-dirs  ["src"]
+                  :class-dir class-dir})
+  (b/uber opts)
+  (println (str "Uber JAR created: \"" uber-file "\"")))
+
+(defn uber-serverless
+  "Create uberjar file for serverless project in '\"target/{{hash}}.jar\" path'.
+
+  If a file with the same name exists, it is overwritten.
+  If it's a git repository, no files should have changed since the HEAD commit.
+  This must be run in root of the serverless project.
+  'target/target.json' is created containing uberjar file name and version."
+  []
+  (assert (.exists (b/resolve-path "serverless.yml")) "You are not in a serverless project.")
+  (clean)
+  (let [commit-hash (repo-hash)
+        uber-file (format "target/%s.jar" (or commit-hash "uber"))]
     (when commit-hash
       (assert (nil? (repo-status)) "The repository is not clean."))
-
     (b/write-file {:path   "target/target.json"
-                   :string (json/write-str {:file uber-file :version commit-hash}
+                   :string (json/write-str {:file uber-file
+                                            :version commit-hash}
                                            :escape-slash false)})
-    (b/copy-dir {:src-dirs   ["src" "resources" "classes"]
-                 :target-dir class-dir})
-    (b/compile-clj {:basis     basis
-                    :src-dirs  ["src"]
-                    :class-dir class-dir})
-    (b/uber opts)
-
-    (println (str "Uber JAR created: \"" uber-file "\""))))
+    (uber {:uber-file uber-file})))
 
 (defn serverless
   "serverless 기본 설정(.yml) 파일을 생성합니다."
