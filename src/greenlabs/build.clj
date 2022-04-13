@@ -53,7 +53,7 @@
   If it's a git repository, no files should have changed since the HEAD commit.
   This must be run in root of the serverless project.
   'target/target.json' is created containing uberjar file name and version."
-  []
+  [_]
   (assert (.exists (b/resolve-path "serverless.yml")) "You are not in a serverless project.")
   (clean)
   (let [commit-hash (repo-hash)
