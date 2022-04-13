@@ -13,7 +13,7 @@ tools.build 사용하듯이 `:build` 별칭으로 사용할 수 있습니다.
 ### 1. uberjar 빌드
 ```sh
 clojure -T:build uber \
-    :uber-file farmmorning-backend \
+    :uber-file target/farmmorning-backend.jar \
     :main farmmorning.core
 ```
 
