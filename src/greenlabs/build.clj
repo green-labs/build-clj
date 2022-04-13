@@ -40,10 +40,10 @@
   (b/compile-clj {:basis     basis
                   :src-dirs  ["src"]
                   :class-dir class-dir})
-  (b/uber {:uber-file uber-file
+  (b/uber {:uber-file (str uber-file)
            :basis     basis
-           :class-dir class-dir
-           :main      main})
+           :class-dir (str class-dir)
+           :main      (symbol main)})
   (println (str "Uber JAR created: \"" uber-file "\"")))
 
 (defn uber-serverless
