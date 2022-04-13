@@ -31,17 +31,19 @@
     :basis              - optional, used to pull dep jars, defaults to deps.edn basis
     :class-dir          - optional, local class dir to include, defaults to 'target/classes'
     :main               - optional, main class symbol"
-  [{:keys [uber-file basis class-dir]
+  [{:keys [uber-file basis class-dir main]
     :or   {basis     (b/create-basis {:project "deps.edn"})
-           class-dir "target/classes"}
-    :as   opts}]
+           class-dir "target/classes"}}]
   (assert uber-file "uber-file is required")
   (b/copy-dir {:src-dirs   ["src" "resources" "classes"]
                :target-dir class-dir})
   (b/compile-clj {:basis     basis
                   :src-dirs  ["src"]
                   :class-dir class-dir})
-  (b/uber opts)
+  (b/uber {:uber-file (str uber-file)
+           :basis     basis
+           :class-dir (str class-dir)
+           :main      (symbol main)})
   (println (str "Uber JAR created: \"" uber-file "\"")))
 
 (defn uber-serverless
@@ -51,7 +53,7 @@
   If it's a git repository, no files should have changed since the HEAD commit.
   This must be run in root of the serverless project.
   'target/target.json' is created containing uberjar file name and version."
-  []
+  [_]
   (assert (.exists (b/resolve-path "serverless.yml")) "You are not in a serverless project.")
   (clean)
   (let [commit-hash (repo-hash)
@@ -59,7 +61,7 @@
     (when commit-hash
       (assert (nil? (repo-status)) "The repository is not clean."))
     (b/write-file {:path   "target/target.json"
-                   :string (json/write-str {:file uber-file
+                   :string (json/write-str {:file    uber-file
                                             :version commit-hash}
                                            :escape-slash false)})
     (uber {:uber-file uber-file})))
@@ -75,13 +77,13 @@
         default-config {:service  "my-service"
                         :function "my-fn"
                         :file     "my-file"}
-        config         (merge default-config serverless)
+        config (merge default-config serverless)
 
-        yaml           (slurp (io/resource "serverless.yml"))
-        output         (reduce-kv
-                         (fn [s k v]
-                           (str/replace s (str "{{" (name k) "}}") v))
-                         yaml
-                         config)]
+        yaml (slurp (io/resource "serverless.yml"))
+        output (reduce-kv
+                 (fn [s k v]
+                   (str/replace s (str "{{" (name k) "}}") v))
+                 yaml
+                 config)]
     (b/write-file {:path   "serverless.yml"
                    :string output})))
