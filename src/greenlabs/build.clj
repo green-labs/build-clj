@@ -43,7 +43,7 @@
   (b/uber {:uber-file (str uber-file)
            :basis     basis
            :class-dir (str class-dir)
-           :main      (symbol main)})
+           :main      main})
   (println (str "Uber JAR created: \"" uber-file "\"")))
 
 (defn uber-serverless
