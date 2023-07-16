@@ -53,18 +53,18 @@
   If it's a git repository, no files should have changed since the HEAD commit.
   This must be run in root of the serverless project.
   'target/target.json' is created containing uberjar file name and version."
-  [_]
+  [args]
   (assert (.exists (b/resolve-path "serverless.yml")) "You are not in a serverless project.")
   (clean)
   (let [commit-hash (repo-hash)
         uber-file (format "target/%s.jar" (or commit-hash "uber"))]
-    (when commit-hash
+    #_(when commit-hash
       (assert (nil? (repo-status)) "The repository is not clean."))
     (b/write-file {:path   "target/target.json"
                    :string (json/write-str {:file    uber-file
                                             :version commit-hash}
                                            :escape-slash false)})
-    (uber {:uber-file uber-file})))
+    (uber (assoc args :uber-file uber-file))))
 
 (defn serverless
   "serverless 기본 설정(.yml) 파일을 생성합니다."
