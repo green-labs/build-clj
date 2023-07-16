@@ -40,6 +40,10 @@
   (b/compile-clj {:basis     basis
                   :src-dirs  ["src"]
                   :class-dir class-dir})
+  (prn {:uber-file (str uber-file)
+        :basis     basis
+        :class-dir (str class-dir)
+        :main      main})
   (b/uber {:uber-file (str uber-file)
            :basis     basis
            :class-dir (str class-dir)
